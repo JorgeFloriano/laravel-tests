@@ -2,7 +2,7 @@
 
 @section('content')
 
-    <h2>Login Form</h2>
+    <h2>Login Form Test</h2>
 
     <form action="{{ route('login.store') }}" method="post">
         @csrf
