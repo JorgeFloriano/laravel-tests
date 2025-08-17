@@ -4,7 +4,7 @@
 
     <h2>Login Form Test</h2>
 
-    <form action="{{ route('login.store') }}" method="post">
+    <form action="{{ route('login.stores') }}" method="post">
         @csrf
         <input type="text" name="email" placeholder="Email">
         <input type="password" name="password" placeholder="Password">
