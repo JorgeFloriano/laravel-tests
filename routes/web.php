@@ -6,5 +6,8 @@ use App\Http\Controllers\HomeController;
 
 Route::get(uri:'/', action:[HomeController::class, 'index'])->name(name: 'home');
 
-Route::get(uri:'/login', action:[LoginController::class, 'index'])->name(name: 'login');
+Route::get(uri:'/login', action:[LoginController::class, 'index'])
+->name(name: 'login')
+->middleware(middleware:'guest');
+
 Route::post(uri:'/login', action:[LoginController::class, 'store'])->name(name: 'login.store');

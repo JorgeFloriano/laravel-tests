@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -9,9 +10,9 @@ class LoginController extends Controller
 {
     public function index()
     {
-        return view(view: 'login.index', data:[
-            'name' => $name
-        ]);
+        //User::factory()->create();
+        //Auth::loginUsingId(id: 1);
+        return view(view: 'login.index');
     }
 
     public function store(Request $request)
