@@ -11,3 +11,4 @@ Route::get(uri:'/login', action:[LoginController::class, 'index'])
 ->middleware(middleware:'guest');
 
 Route::post(uri:'/login', action:[LoginController::class, 'store'])->name(name: 'login.store');
+Route::delete(uri:'/logout', action:[LoginController::class, 'destroy'])->name(name: 'login.destroy');

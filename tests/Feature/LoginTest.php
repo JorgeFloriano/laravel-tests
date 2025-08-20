@@ -68,6 +68,7 @@ class LoginTest extends TestCase
 
         $response->assertStatus(status:302);
         $response->assertRedirectToRoute(name:'home');
+        $this->assertAuthenticatedAs(user:$user, guard: null);
     }
 
     public function test_if_password_or_email_are_valid()
@@ -80,5 +81,16 @@ class LoginTest extends TestCase
         $response->assertStatus(status:302);
         $response->assertSessionHas('message', 'The email or password is invalid');
         $response->assertRedirectToRoute(name:'login');
+    }
+
+    public function test_logout()
+    {
+        $this->withoutExceptionHandling();
+
+        $user = User::factory()->create();
+        $response = $this->actingAs(user:$user)->delete(uri:'/logout');
+        $response->assertStatus(status:302);
+        $response->assertRedirectToRoute(name:'login');
+        $this->assertGuest();
     }
 }
