@@ -2,9 +2,11 @@
 
 namespace Tests\Feature;
 
+use App\Exceptions\CartExeption;
 use App\Models\Product;
 use Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Exceptions;
 
 class CartControllerTest extends TestCase
 {
@@ -27,15 +29,17 @@ class CartControllerTest extends TestCase
         $this->assertCount(expectedCount:1, haystack:session('cart'));
     }
 
-    public function test_if_product_added_to_cart_2()
+    public function test_if_handle_exception_cart_is_full()
     {
-        dump(session()->all());
-        $product = Product::factory()->create();
+        Exceptions::fake();
 
-        $response = $this->withSession(data:['test' => 'test'])->post(uri: '/cart/' . $product->id);
+        $products = Product::factory()->count(2)->create();
 
-        $response->assertStatus(200);
-        $response->assertSessionHas('cart');
-        $this->assertCount(expectedCount:1, haystack:session('cart'));
+        $this->withSession(data:['cart' => $products])->post(uri: '/cart/' . $products[0]->id);
+
+        Exceptions::assertReported(CartExeption::class);
+        Exceptions::assertReported(function (CartExeption $exception) {
+            return $exception->getMessage() === 'Cart is full';
+        });
     }
 }
