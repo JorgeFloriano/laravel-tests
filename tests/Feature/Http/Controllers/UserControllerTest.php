@@ -74,14 +74,30 @@ class UserControllerTest extends TestCase
             'password' => bcrypt(value:'123'),
         ];
 
-        $this->instance(
-            abstract: UserController::class,
-            instance: Mockery::mock(UserController::class, function (MockInterface $mock) {
-                $mock->shouldReceive('store')->once()->andReturn(
-                    redirect()->route(route: 'user.create')->with('error', 'User not created')
-                );
-            })
-        );
+        // Mock way 01------------------------------------------------------------------------------
+
+        // $this->instance(
+        //     abstract: UserController::class,
+        //     instance: Mockery::mock(UserController::class, function (MockInterface $mock) {
+        //         $mock->shouldReceive('store')->once()->andReturn(
+        //             redirect()->route(route: 'user.create')->with('error', 'User not created')
+        //         );
+        //     })
+        // );
+
+        // Mock way 02------------------------------------------------------------------------------
+
+        // $this->mock(UserController::class, function (MockInterface $mock) {
+        //     $mock->shouldReceive('store')->once()->andReturn(
+        //         redirect()->route(route: 'user.create')->with('error', 'User not created')
+        //     );
+        // });
+
+        // Mock way 03------------------------------------------------------------------------------
+
+        $this->mock(abstract: 'alias:' . User::class, mock:function (MockInterface $mock) {
+            $mock->shouldReceive('create')->once()->andReturn(true);
+        });
 
         $response = $this->post(uri:'/user/store', data:$user);
 

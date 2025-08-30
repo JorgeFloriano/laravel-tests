@@ -6,8 +6,6 @@ use App\Exceptions\CartExeption;
 
 class Cart
 {
-    private array $products = [];
-
     public function add(Product $product):void
     {
         if (session()->has('cart') && count(session('cart')) >= 2) {
@@ -18,7 +16,12 @@ class Cart
         session()->push('cart', $product);
     }
 
-    public function cart():array
+    public function isFull():bool
+    {
+       return !empty($this->cart());
+    }
+
+    public function cart()
     {
         //return $this->products;
         return session(key:'cart');

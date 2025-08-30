@@ -8,9 +8,10 @@ use Illuminate\Http\Request;
 
 class CartController extends Controller
 {
-    public function store(Product $product): void
+    public function store(Product $product, Cart $cart): void
     {
-        $cart = new Cart();
-        $cart->add($product);
+        if (!$cart->isFull()) {
+            $cart->add($product);
+        }
     }
 }

@@ -3,10 +3,12 @@
 namespace Tests\Feature;
 
 use App\Exceptions\CartExeption;
+use App\Models\Cart;
 use App\Models\Product;
 use Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Exceptions;
+use Mockery\MockInterface;
 
 class CartControllerTest extends TestCase
 {
@@ -22,7 +24,7 @@ class CartControllerTest extends TestCase
     {
         $product = Product::factory()->create();
 
-        $response = $this->withSession(data:['test' => 'test'])->post(uri: '/cart/' . $product->id);
+        $response = $this->post(uri: '/cart/' . $product->id);
 
         $response->assertStatus(200);
         $response->assertSessionHas('cart');
