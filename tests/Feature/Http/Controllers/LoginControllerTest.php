@@ -19,7 +19,7 @@ class LoginControllerTest extends TestCase
 
     public function test_if_user_can_see_login_form()
     {
-        //$this->withoutExceptionHandling();
+        $this->withoutExceptionHandling();
 
         $response = $this->get(uri:'/login');
 
