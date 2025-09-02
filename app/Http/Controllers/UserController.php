@@ -2,8 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\UserCreated;
+use App\Models\Test;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
 
 class UserController extends Controller
 {
@@ -26,7 +29,7 @@ class UserController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(Request $request, Test $test)
     {
         request()->validate([
             'name' => 'required',    
@@ -34,13 +37,13 @@ class UserController extends Controller
             'password' => 'required'
         ]);
 
-        $created = User::create([$request->all()]);
+        $created = User::create($request->all());
 
         if (!$created) {
-            dd('error');
             return redirect()->back()->with('error', 'User not created');
         }
 
+        Mail::to($created->email)->send(mailable: new UserCreated($created));
         return redirect()->back()->with('success', 'User created');
     }
 

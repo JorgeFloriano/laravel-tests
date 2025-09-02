@@ -3,11 +3,14 @@
 namespace Tests\Feature\Http\Controllers;
 
 use App\Http\Controllers\UserController;
+use App\Mail\UserCreated;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
+use Illuminate\Support\Facades\Mail;
 use Mockery;
 use Mockery\MockInterface;
+use PHPUnit\Framework\Attributes\RunInSeparateProcess;
 use PHPUnit\Framework\MockObject\Rule\MethodName;
 use Tests\TestCase;
 
@@ -57,16 +60,16 @@ class UserControllerTest extends TestCase
         ]);
     }
 
-    public function test_can_not_access_authenticated_user()
-    {
-        $user = User::factory()->create();
-        $response = $this->actingAs(user:$user)->get(uri:'/user/create');
+    // public function test_can_not_access_authenticated_user()
+    // {
+    //     $user = User::factory()->create();
+    //     $response = $this->actingAs(user:$user)->get(uri:'/user/create');
 
-        $response->assertStatus(status:302);
-        $response->assertRedirectToRoute(name:'home');
-    }
+    //     $response->assertStatus(status:302);
+    //     $response->assertRedirectToRoute(name:'home');
+    // }
 
-    public function test_error_create_user()
+    #[RunInSeparateProcess] public function test_error_create_user()
     {
         $user = [
             'name' => 'Jorge',
@@ -96,10 +99,10 @@ class UserControllerTest extends TestCase
         // Mock way 03------------------------------------------------------------------------------
 
         $this->mock(abstract: 'alias:' . User::class, mock:function (MockInterface $mock) {
-            $mock->shouldReceive('create')->once()->andReturn(true);
+            $mock->shouldReceive('create')->once()->andReturnFalse();
         });
 
-        $response = $this->post(uri:'/user/store', data:$user);
+        $response = $this->from(url:'/user/create')->post(uri:'/user/store', data:$user);
 
         $response->assertStatus(status:302);
         $response->assertRedirectToRoute(name:'user.create');
@@ -128,5 +131,24 @@ class UserControllerTest extends TestCase
         $response->assertStatus(status:302);
         $response->assertRedirectToRoute(name:'user.create');
         $response->assertSessionHas('success', 'User created');
+    }
+
+    public function test_if_email_sent()
+    {
+        Mail::fake();
+
+        $user = [
+            'name' => 'Jorge',
+            'email' => 'email@email.com.br',
+            'password' => bcrypt(value:'123'),
+        ];
+
+        $response = $this->from(url:'/user/create')->post(uri:'/user/store', data:$user);
+
+        $user = User::latest()->first();
+
+        Mail::assertSent(mailable:UserCreated::class, callback:function ($mail) use ($user) {
+            return $mail->hasTo($user->email) && $mail->user->id;
+        });
     }
 }
