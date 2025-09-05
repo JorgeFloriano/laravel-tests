@@ -1,3 +1,1 @@
-Olá {{$user->name}},
-
-Sua conta foi criada com sucesso!
+Olá {{ $user->name }}, sua conta foi criada com sucesso!
