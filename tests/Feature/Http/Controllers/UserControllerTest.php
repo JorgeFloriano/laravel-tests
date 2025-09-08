@@ -3,11 +3,14 @@
 namespace Tests\Feature\Http\Controllers;
 
 use App\Http\Controllers\UserController;
+use App\Jobs\SendEmail;
 use App\Mail\UserCreated;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
+use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Queue;
 use Mockery;
 use Mockery\MockInterface;
 use PHPUnit\Framework\Attributes\RunInSeparateProcess;
@@ -133,7 +136,7 @@ class UserControllerTest extends TestCase
         $response->assertSessionHas('success', 'User created');
     }
 
-    public function test_if_email_sent()
+    public function test_email_sent()
     {
         Mail::fake();
 
@@ -148,7 +151,8 @@ class UserControllerTest extends TestCase
         $user = User::latest()->first();
 
         Mail::assertSent(mailable: UserCreated::class, callback: function ($mail) use ($user) {
-            return $mail->hasTo($user->email) && $mail->user->id == $user->id;
+            return $mail->hasTo($user->email)
+            && $mail->user->id == $user->id;
         });
     }
 
@@ -183,5 +187,31 @@ class UserControllerTest extends TestCase
         $response = $this->from(url: '/user/create')->post(uri: '/user/store', data: $user);
 
         $response->assertStatus(status: 500);
+    }
+
+    public function test_email_job_dispatched_if_user_created()
+    {
+        // Bus::fake();
+        Queue::fake();
+
+        $user = [
+            'name' => 'Jorge',
+            'email' => 'email@email.com.br',
+            'password' => bcrypt(value: '123'),
+        ];
+
+        $response = $this->from(url: '/user/create')->post(uri: '/user/store', data: $user);
+
+        $user = User::latest()->first();
+
+        // Bus::assertDispatched(command: SendEmail::class, callback: function ($job) use ($user) {
+        //     return $job->user->id == $user->id;
+        // });
+
+        Queue::assertPushed(job: SendEmail::class, callback: function ($job) use ($user) {
+            return $job->user->id == $user->id;
+        });
+
+        Queue::assertPushedOn(queue: 'email', job: SendEmail::class);
     }
 }

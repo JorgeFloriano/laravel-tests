@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\SendEmail;
 use App\Mail\UserCreated;
 use App\Models\Test;
 use App\Models\User;
@@ -43,7 +44,9 @@ class UserController extends Controller
             return redirect()->back()->with('error', 'User not created');
         }
 
-        Mail::to($created->email)->send(mailable: new UserCreated($created));
+        // Mail::to($created->email)->send(mailable: new UserCreated($created));
+        SendEmail::dispatch($created)->onQueue(queue: 'email');
+
         return redirect()->back()->with('success', 'User created');
     }
 
